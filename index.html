@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter XI: Bayesian Data Mining and Knowledge Discovery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Chapter XI</h1>
+    <h2>Bayesian Data Mining and Knowledge Discovery</h2>
+    <p>Eitel J. M. Lauria</p>
+    <p>State University of New York, Albany, USA</p>
+    <p>Universidad del Salvador, Argentina</p>
+    <p>Giri Kumar Tayi</p>
+    <p>State University of New York, Albany, USA</p>
+    
+    <h2>Abstract</h2>
+    <p>One of the major problems faced by data-mining technologies is how to deal with uncertainty. The prime characteristic of Bayesian methods is their explicit use of probability for quantifying uncertainty. Bayesian methods provide a practical method to make inferences from data using probability models for values we observe and about which we want to draw some hypotheses. Bayes’ Theorem provides the means of calculating the probability of a hypothesis (posterior probability) based on its prior probability, the probability of the observations, and the likelihood that the observational data fits the hypothesis.</p>
+    <p>The purpose of this chapter is twofold: to provide an overview of the theoretical framework of Bayesian methods and its application to data mining, with special emphasis on statistical modeling and machine-learning techniques; and to illustrate each theoretical concept covered with practical examples. We will cover basic probability concepts, Bayes’ Theorem and its implications, Bayesian classification, Bayesian belief networks, and an introduction to simulation techniques.</p>
+    
+    
+    
+     <h1>Data Mining, Classification, and Supervised Learning</h1>
+
+    <p>There are different approaches to data mining, which can be grouped according to the kind of task pursued and the kind of data under analysis. A broad grouping of data-mining algorithms includes classification, prediction, clustering, association, and sequential pattern recognition.</p>
+
+    <p>Data Mining is closely related to machine learning. Imagine a process in which a computer algorithm learns from experience (the training data set) and builds a model that is then used to predict future behavior. Mitchell (1997) defines machine learning as follows: a computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E. For example, consider a handwriting recognition problem: the task T is to recognize and classify handwritten words and measures; the performance measure P is the percent of words correctly classified; and the experience E is a database of handwritten words with given class values. This is the case of classification: a learning algorithm (known as a classifier) takes a set of classified examples from which it is expected to learn a way of classifying unseen examples. Classification is sometimes called supervised learning because the learning algorithm operates under supervision by being provided with the actual outcome for each of the training examples.</p>
+
+    <p>Consider the following example data set based on the records of the passengers of the Titanic. The Titanic dataset gives the values of four categorical attributes for each of the 2,201 people on board the Titanic when it struck an iceberg and sank. The attributes are social class (first class, second class, third class, crew member), age (adult or child), sex, and whether or not the person survived. Table 1 below lists the set of attributes and its values.</p>
+
+    <p>In this case, we know the outcome of the whole universe of passengers on the Titanic; therefore, this is a good example to test the accuracy of the classification procedure. We can take a percentage of the 2,201 records at random (say, 90%) and use them as the input dataset with which we would train the classification model.</p>
+
+    <p>The trained model would then be used to predict whether the remaining 10% of the passengers survived or not, based on each passenger’s set of attributes (social class, age, sex). A fragment of the total dataset (24 records) is depicted in Table 2.</p>
+
+    <p>The question that remains is how do we actually train the classifier so that it is able to predict with reasonable accuracy the class of each new instance it is fed? There are many different approaches to classification, including traditional multivariate statistical</p>
+    
+    <p>Table 1: Titanic example data set</p>
+    <img src="table%2011.1.png">
+    
+    
+    <p>Table 2: Fragment of Titanic data set</p>
+    <img src="table%2011.2.png">
+    <p>methods, where the goal is to predict or explain categorical dependent variables (logistic
+regression, for example), decision trees, neural networks, and Bayesian classifiers. In this
+chapter, we will focus on two methods: Naive Bayes and Bayesian Belief Networks.</p>
+    
+    
+    <h1>The Bayesian Approach to Probability</h1>
+
+    <p>The classical approach of probability ties probability to the physical nature of the world. This means that if we toss a coin, the probability of getting heads or tails is intrinsically linked to the physical properties of the coin. Under this interpretation, we could estimate the “probability of getting heads” as the frequency of heads after repeating the experiment a certain number of times. The (weak) Law of Large Numbers states that when the number of random observations of a certain event is very large, the relative frequency of the observations is a near exact estimate of the probability of the event. Since frequencies can be measured, this frequentist interpretation of probability seemed to be an objective measure for dealing with random phenomena.</p>
+
+    <p>There are many situations in which the frequency definition of probability exhibits its limited validity. Although the classical (frequentist) approach seems to be a good way of estimating probabilities, difficulties surface when facing situations in which experiments are not possible. For example, when trying to answer the question of “Who is going to be the next President of the United States of America?”, the frequentist approach fails to provide an answer; the event has an associated probability, but there is no possible way of experimenting and measuring the relative frequencies because the event has a single occurrence. And there are many other cases in which a frequency approach is not applicable or is, at least, far-fetched. Why should we have to think of probability in terms of many repetitions of an experiment that never happened? As Sivia (1996) mentions, we are at liberty to think about a problem in any way that facilitates a solution or our</p>
+    
+    
+    <p>having understand of it but Having to seek a frequentist interpretation for every data analysis problem seems rather perverse.</p>
+
+    <p>The Bayesian approach, instead, provides an elegant framework to deal with this kind of probability problems. To Bayesians, the probability of a certain event represents the degree of belief that such event will happen. We don’t need to think of probabilities as frequency distributions— probability measures the degree of personal belief. Such belief is therefore governed by a probability distribution that can be updated by making use of the observed data. To do so, however, Bayesians address data analysis from a different perspective; i.e., the personal belief in the occurrence of a certain event starts with a given distribution, which stands before any data is considered and is therefore known as prior distribution. Observational data is incorporated into the data analysis process in order to obtain a posterior probability distribution by updating our prior belief.</p>
+
+    <p>But how do we perform this update of our prior belief? And besides, where does the name Bayesian come from?</p>
+    
+    <p>Bayesian thinking has its roots in the question of how to reason in situations in which it is not possible to argue with certainty, and in the difference between inductive and deductive logic. The problem of inductive reasoning has puzzled philosophers since the time of Aristotle, as a way of inferring universal laws from a finite number of cases, as opposed to deductive logic, the kind of reasoning typically used in mathematics. Deductive logic is based on deriving the conclusion from the implicit content of its premises, so that if the premises are true, then the conclusion is necessarily true. We can therefore derive results by applying a set of well-defined rules. Games of chance fall into this category as well. If we know that an unbiased die is rolled five times, we can calculate the chances of getting three ones, for example.</p>
+
+    <p>Inductive reasoning tackles a different problem, actually the reverse of the above situation; i.e., given that a finite number of effects can be observed, derive from them a general (causal) law capable of explaining each and all of the effects (premises) from which it was drawn. Going back to the previous example, inductive reasoning would try to explain whether the rolled die is biased or not after observing the outcome of five repeated throws.</p>
+     
+     <h2>Bayes' Theorem</h2>
+
+    <p>Bayes’ Theorem is derived from a simple reordering of terms in the product rule of probability:</p>
+    
+    
+    <p>P(B|A) = P(B) * P(A | B) / P(A)</p>
+    
+    
+    <p>If we replace B by H (a hypothesis under consideration) and A by D (the evidence, or set of observational data), we get:</p>
+
+    <p>P(H|D) = P(D) * P(D | H) / P(H)</p>
+
+    
+    
+     <p>Note that:</p>
+    <ul>
+        <li>P(H|D) is the probability of a certain hypothesis based on a set of observational data given a certain context (posterior probability of hypothesis H);</li>
+        <li>P(D|H) is the likelihood of the observations given a certain hypothesis in a given context;</li>
+        <li>P(H) is the intrinsic probability of hypothesis H, before considering the evidence D (prior probability);</li>
+        <li>P(D) is the probability of the observations, independent of the hypothesis, that can be interpreted as a normalizing constant rendering P(H/D) to a value interval of [0,1].</li>
+    </ul>
+
+    <p>Bayes’ Theorem can then be reformulated in the following way: the probability of a certain hypothesis given a set of observations in a given context depends on its prior probability and on the likelihood that the observations will fit the hypothesis.</p>
+
+    <p>P(H|D) ∝ P(H) * P(D|H)</p>
+
+    <p>This means that the probability of the hypothesis is being updated by the likelihood of the observed data. The result of the Bayesian data analysis process is the posterior probability distribution of the hypothesis that represents a revision of the prior distribution in the light of the evidence provided by the data.</p>
+    
+    
+      <h2>Conjugate Prior Distributions</h2>
+
+    <p>Let us first reformulate Bayes’ Theorem in terms of probability distributions. As such, Bayes’ formula can be rewritten as:</p>
+
+    <p>p(θ | x) ∝ p(x | θ)*p(θ)</p>
+
+    <p>where the prior p(θ) on the unknown parameter θ characterizes knowledge or beliefs about θ before seeing the data; the likelihood function p(x | θ) summarizes the sample information about θ.</p>
+
+    <p>In order to assess the prior distribution of θ, many Bayesian problems make use of the notion of conjugacy. For each of the most popular statistical families, there exists a family of distributions for the parameter such that, if the prior distribution is chosen to be a member of the family, then the posterior distribution will also be a member of that family. Such a family of distributions is called a conjugate family. Choosing a prior distribution from that family will typically simplify the computation of the posterior.</p>
+
+    <p>For example, suppose that X1, X2, ..., Xn form a random sample drawn from a Bernoulli distribution for which the parameter θ is unknown. Suppose that we choose a Beta distribution for prior, with parameters α and β, both > 0. Then the posterior distribution of θ given the sample observations is also a Beta, with parameters</p>
+    
+        <img src="formula%201.png"> 
+    
+    <img src="table%2011.2.png">
+    
+    <p>As can be seen in the previous expression, given that the likelihood is a binomial
+distribution, by choosing the prior as a Beta distribution, the posterior distribution can
+be obtained without the need of integrating a rather complex function. Although this is
+a very convenient approach, in many practical problems there is no way of approximating
+our prior beliefs by means of a “nice” (conjugate) prior distribution.</p>
+    
+     <h2>Critique of the Bayesian Framework</h2>
+
+    <p>The Bayesian approach did not come without difficulties. The concerns regarding subjectivity of its treatment of probability is understandable. Under the belief interpretation, probability is not an objective property of some physical setting but is conditional to the prior assumptions and experience of the learning system. The prior probability distribution can arise from previously collected observations, but if the data is not available, it should be derived from the subjective assessment of some domain expert.</p>
+
+    <p>According to this personal, or subjective, interpretation of probability, the probability that a person assigns to a possible outcome of some process represents his/her judgment of the likelihood that the outcome will be obtained. This subjective interpretation can be formalized, based on certain conditions of consistency. However, as DeGroot (1986) describes, the requirement that a person’s judgment of the relative likelihood of a large number of events be completely consistent and free of inconsistencies is humanly unattainable. And besides, a subjective interpretation may not provide a common basis for an objective theory about a certain topic of interest. Two different persons may have two different interpretations and may not reach a common evaluation of the state of knowledge.</p>
+
+    <p>Now, how much does this subjectivity issue affect the Bayesian framework? As Sivia (1996) points out, the Bayesian view is that a probability does indeed represent how much do we believe that a certain event is true, but this belief should be based on all the relevant information available. This is not the same as subjectivity; it simply means that probabilities are conditional on the prior assumptions and that these assumptions must be stated explicitly. Janes (1996) explains that objectivity only demands that two individuals who are given the same information and who reason according to the rules of probability theory should make the same probability assignment. Interestingly enough, Cox (1946) studied the quantitative rules necessary for logical and consistent reasoning and showed that plausible reasoning and calculus of beliefs map exactly into the axioms of probability theory. He found that the only rules that met the requirements for logical and consistent reasoning were those derived from probability theory.</p>
+
+    <p>The other source of criticism is based on scalability. Within the field of artificial intelligence, for example, the use of Bayesian methods in expert systems was criticized because the approach did not scale well for real-world problems. To visualize these</p>
+
+    
+    <p>scalability issues, let us consider the typical problems faced when trying to apply the
+Bayesian framework. The Bayes’ formula can be expressed as:</p>
+    <img src="formula%203.png">
+    
+    <p>Note that the normalizing factor p(x) is calculated by integrating over all the possible values of θ. But what happens when we deal with multidimensional parameters, that is, when θ is in ℝ^n? In such cases, the normalizing factor must be calculated as ∫[ℜ^n] p(x |θ )*p(θ )dθ, and the resulting expressions may not have a straightforward analytical solution and, in the worst case, may be computationally infeasible.</p>
+
+    <p>Similar situations arise when trying to calculate marginal densities or expected values. In the case of expectation, the goal of the analysis may be to obtain the expected value of a function g(θ) for which we have</p>
+   
+    <img src="formula%204.png">
+    
+     <p>As can be observed, we encounter a similar kind of problem as before. For high-dimensional spaces, it is usually impossible to evaluate these expressions analytically, and traditional numerical integration methods are far too computationally expensive to be of any practical use.</p>
+
+    <p>Luckily, new developments in simulation during the last decade have mitigated much of the previous criticism. The inherent scalability problems of traditional Bayesian analysis, due to the complexity of integrating expressions over high-dimensional distributions, have met an elegant solution framework. The introduction of Markov Chain Monte Carlo methods (MCMC) in the last few years has provided enormous scope for realistic Bayesian modeling (more on this later in this chapter).</p>
+
+     <h2>Bayesian Classification</h2>
+
+    <p>In discussing Bayes’ Theorem, the focus has been to find the most probable hypothesis given a set of observations. But in data-mining problems, one of the major tasks is to classify (predict the outcome of) a new observation based on a previous set of observations (the training data set).</p>
+
+    <p>Suppose we have a classification problem where the class variable is denoted by C and can take values c1, ..., ck. Consider a data set D represented by m attributes A1, A2, ..., Am of which the observations (a1, a2, ..., am) have been taken for each instance of D. This implies that any given instance of D may be expressed as (A1=a1, A2=a2, ..., Am=am). Suppose that each instance of the data set D is classified as c1, ..., ck;</p>
+    
+    <p>Bayesian approach to classifying a new instance would be to assign the most probable target
+value (a class value of type ci
+) by calculating the posterior probability for each class, given
+D, and selecting the one with the maximum a posteriori (MAP) probability. Following
+Mitchell’s notation:</p>
+    <img src="formula%205.png">
+    
+     <p>Any system that classifies new instances according to the expression in the above text is known as an "optimal Bayesian classifier." It can be proven that an optimal Bayesian classifier renders the highest probability that the new instance is classified correctly using the same hypothesis space and the same prior knowledge (Mitchell, 1997).</p>
+    <p>Although the idea of applying full-blown Bayesian criteria to analyze a hypothesis space in search of the most feasible hypothesis is conceptually attractive, it usually fails to deliver in practical settings. This is because, although we can successfully estimate P(ci) from the training data, calculating the joint probability P(D|ci) = P(A1=a1, A2=a2, .., An=an | Ci) is usually not possible because the number of possible combinations is equal to the number of possible instances times the number of class values. Unless the training data set is very large (which on the other hand might render the procedure computationally intractable), the resulting estimates would be representative of a small fraction of the instance space and hence would be unreliable.</p>
+    
+    <h2>The Naive Bayes Classifier</h2>
+    
+    <p>The Naive Bayes Classifier facilitates the estimation of the conditional probabilities by introducing two simplifying assumptions:</p>
+    
+     <ol>
+        <li>Assume conditional independence among attributes of the data sample. This means that the posterior probability of D, given ci is equal to the product of the posterior probability of each attribute.</li>
+    </ol>
+    <img src="formula%206.png">
+    <p>The conditional probabilities of each individual attribute can be estimated from the
+frequency distributions of the sample data set D. (Note that if attribute values are
+continuous, they need to be discretized first, making some assumptions regarding
+the probability density functions for each of them. For more information regarding
+discretization procedures, see Dougherty, Kohavi, & Sahami, 1995.)</p>
+    <li>If the prior probabilities P(Ci) are unknown, they can also be estimated assuming that classes Ci are equally likely and therefore computing the probabilities from the sample data set frequency distributions.</li>
+    <p>These assumptions lead to a substantial reduction of the number of distinct conditional probability factors that must be estimated from the training data for example</p>
+    
+   
+    <p>in the sample of 24 records extracted from the Titanic dataset (see Table 2), we can
+        estimate the class probabilities P(survived=yes) and P(survived=no), as follows:</p>
+    
+    <p>P(survived=yes) = (# of instances were survived=yes) / (total # of instances) = 8/24</p>
+<p>P(survived=no) = (# of instances were survived=no) / (total # of instances) = 16/24</p>
+    
+    <p>Next, the conditional probabilities are computed as follows:</p>
+    
+    <p>P(socialclass=crew | survived=yes) = # of instances where socialclass=crew and survived=yes = 3</p>
+                               <p># of instances where survived=yes: 8</p>
+    
+    <p>P(socialclass=1st | survived=yes) = # of instances where socialclass=1st and survived=yes: 2</p>
+    <p># of instances were survived=yes 3</p>
+   <p>This procedure is repeated for every conditional probability of the form P(Aj | ci) until every element in the conditional probability table is computed. Note that with such a reduced sample, the probability estimate will be inaccurate; the example was chosen for illustrative purposes.</p>
+
+<p>Although these assumptions may seem over-simplifying, the fact is that they work quite well in certain classification problems. To illustrate the practical importance of the Naive Bayes algorithm in classification tasks, the authors coded a simple version of the Naive Bayes Classifier and tested it using the full Titanic dataset, with 90% of the original dataset used for training purposes and the remaining 10% to test the accuracy of the classifier. Given two possible class values (survived or not), we could expect a classification accuracy of approximately 50%, based on random guessing. In our case, the algorithm yielded an accuracy of 88%, impressive enough if we consider that the dataset contained a very small number of attributes.
+    
+    Various empirical studies of the Naive Bayes Classifier have rendered comparable results to those obtained by using state of the art classifiers such as decision tree algorithms or neural network models. The studies have reported accuracy levels of 89% when using a Naive Bayesian model to classify Usenet news articles. For more details see Mitchell (1997) and Joachims (1996).</p>
+    
+    <title>Coping with Zero-Frequency Attributes</title>
+    <p>An aspect that may drastically affect the outcome of a Naive Bayes Classifier is when a particular attribute does not occur in the training set for one or more class values. Suppose, for example, that in the Titanic dataset there are no first-class passengers who died in the wreck. This would mean that the number of instances for which socialclass = 1st and survived = no would be equal to zero.</p>
+
+<p>In such a case, the conditional probability P(socialclass=1st|survived=no) would be zero, and since P(D|survived=no) is equal to the product of the individual conditional probabilities, P(D|survived=no) would also be equal to zero, eliminating class survived=no from consideration. This “zero-frequency” attribute may bias the maximum a posteriori (MAP) criteria used for choosing the best class. This condition severely limits the practical use of the Naive Bayes Classifier; however, it can be easily remedied by applying minor modifications.</p>
+    
+    
+<p>Adjustments to the method of calculating probabilities from frequencies can be made to address the issue of zero-frequency attributes. Two general approaches commonly considered in the literature are:</p>
+
+<ol>
+    <li>The "no match" approach, where a zero frequency (no count) is replaced by a value that is inversely proportional to the number of instances.</li>
+    <li>Use of the Laplace estimator, where 1 is added to the count for every attribute value-class value combination, so that the "new" relative frequency is calculated as (mjk + 1) / (nk + d), where mjk represents matches of attribute value A=aj and class value C=ck, nk is the count for the class value C=ck, and d is the number of attribute values.</li>
+</ol>
+
+<p>Witten and Frank (2000) have suggested using a Bayesian approach to estimating probabilities using an estimator of the form (mjk + πj * ω) / (nk + ω), where ω is a small constant and πj is the prior probability for each attribute value A=aj. A typical way of estimating πj in the absence of other information is to assume uniform priors; that is, if an attribute has d values, the probability of each attribute value is 1/d.</p>
+
+<title>Bayesian Belief Networks</title>
+    <p>Bayesian belief networks (BBNs) follow a middle-of-the-road approach when compared to the computationally intensive optimal Bayesian classifier and the oversimplified Naive Bayesian approach. A BBN describes the probability distribution of a set of attributes by specifying a set of conditional independence assumptions together with a set of causal relationships among attributes and their related joint probabilities. When used in this way, BBNs result in a powerful knowledge representation formalism, based on probability theory that has the potential of providing much more information about a certain domain than visualizations based on correlations or distance measures.</p>
+
+<h2>Building a Graphical Model</h2>
+
+<p>Given a set of attributes A1, A2, ..., Am, a directed acyclic graph (DAG) is constructed in which each node of the graph represents each of the attributes (including the class attribute) and the arcs represent the causal relationship between the attributes. In this case, the joint probability distribution P(A1=a1, A2=a2, ..., Am=am) is no longer the product of the independent probabilities, as the model includes the causal relationship among attributes. Recalling the product probability rule, the joint probability distribution can be rewritten as:</p>
+   <img src="formula%207.png">
+    
+    
+    
+    <p>Figure 1: Graph (causal) model of a BBN.</p>
+    <img src="figure%2011.1.png">
+    
+    
+    <p>Where parents (Ai) are the direct parents of Ai, linked to Ai through the causal arcs in the graph model. Note that the previous expression includes class C among the set of attributes Ai. For example, if we consider the graph model in Figure 1, the parents of A4 are A2 and A3. If there are no causal relationships among the nodes Ai, P(Ai= ai /Parents(Ai)) = P(Ai=ai); we therefore return to the expression of the joint probability. For the model depicted in Figure 1:</p>
+<img src="formula%208.png">
+    <p>In addition to the graph structure, it is necessary to specify the parameters of the model. This
+means that we must specify the Conditional Probability Distribution (CPD) at each node,
+given the values of its parents. If the variables are discrete, this can be represented as a table,
+which lists the probability that the child node takes on each of its different values for each
+combination of values of its parents.</p>
+    <h1>Inference in Bayesian Belief Networks</h1>
+    <p>Once the belief network is formulated, it can be used for probabilistic inference, that is, to make probabilistic statements concerning the network attributes (nodes). Since a BBN uniquely defines a joint probability distribution, any probability can be computed from the network by specifying the joint probability distribution and applying basic rules of probability, such as conditioning and marginalization.</p>
+    <p>Consider the example in Figure 2, extracted from Van der Gaag (1996). The BBN represents some fictitious medical knowledge concerning the diagnosis of acute cardiac disorders, and it comprises four binary nodes; i.e., each of them have two possible values, which we will denote by true and false. The listed nodes are:</p>
+    <ul>
+        <li>S: Smoking history of the patient</li>
+        <li>M: Presence of heart attack</li>
+        <li>P: Whether the patient was suffering chest pain or not</li>
+        <li>F: Whether the patient had tingling fingers or not</li>
+    </ul>
+    
+    
+    <p>Figure 2: Graphical model of a fictitious medical BBN.</p>
+    <img src="figure%2011.2.png">
+    
+    <p>Show signs of pain in the chest reflected by the high probability assigned to this case.
+    On the other hand, given a heart attack, the patient is not likely to have tingling fingers;
+    the low conditional probability value describes such a state. We see that the events P
+    and F have a common cause (M) but do not depend on S. Applying the product rule to
+    the graph above, we may decompose the joint probability of one case (P(S,M,P,F) =
+    P(S=true, M=true, P=true, F=true)) into a set of independent parent-child contributions
+    as P(S, M, P, F) = P(S) * P(M|S) * P(P|M) * P(F|M). Having specified the model we can
+    calculate the prior probabilities of each node in the network. For example P(M=true) can
+    be calculated as:</p>
+    
+    <p>P(M=true) = P(M|S=true) * P(S=true) + P(M|S=false) * P(S=false) = 0.5</p>
+    <p>Then P(P=true) and P (F=true) are calculated as:</p>
+ <p>P(P=true) = P(P|M=true) * P(M=true) + P(P|M=false) * P(M=false) = 0.6</p>
+    <p>P(F=true) = P(F|M=true) * P(M=true) + P(F|M=false) * P(F=false) = 0.25</p>
+<p>The previous probabilities corresponded to the beliefs that we had on each of the network attributes (nodes) without considering any additional evidence. As before, we may wish to find the most probable hypothesis given a set of observations. In this case, we might want to determine whether it is more likely that the patient has a heart attack or not, given the fact that he/she has signs of chest pain. For such purposes, we need to compare P(M=true|P=true) and P(M=false|P=true): if the first conditional probability is greater, we infer that the patient has a heart attack; if it is smaller we accept the hypothesis that the patient does not have a heart attack. To calculate these posterior probabilities, we apply conditional probability in the following way:</p>
+    
+    
+    <img src="formula%209.png">
+    
+    <p>The denominator is common to both expressions and can be eliminated for comparison purposes. The remaining criteria can be rewritten as:</p>
+    <p>Most probable Hypothesis = argmax [P(M= true, P= true), P(M= true, P= true)]</p>
+    <p>We can calculate both P(M= true, P= true) and P(M= true, P= true) from the conditional probability tables associated with each node:</p>
+    <p>P(M=true, P=true) = P(S=true, M=true, P=true, F=true) +
+        P(S=true, M=true, P=true, F=false) +
+        P(S=false, M=true, P=true, F=true) +
+        P(S=false, M=true, P=true, F=false)</p>
+    <p>P(M=false, P=true) = P(S=true, M=false, P=true, F=true) +
+        P(S=true, M=false, P=true, F=false) +
+        P(S=false, M=false, P=true, F=true) +
+        P(S=false, M=false, P=true, F=false)</p>
+    
+     <p>It should be noted that each joint probability in the above expressions is calculated by applying the causal model depicted in Figure 2. For example, if we wish to calculate P(S=true, M=true, P=true, F=true):</p>
+    
+    <p>P(S=true, M=true, P=true, F=true) = P(S) * P(M|S) * P(P|M) * P(F|M)</p>
+    <p>= 0.4 * 0.8 * 0.9 * 0.1 = 0.0288</p>
+    
+    <p>As indicated before, because a BBN determines a joint probability distribution for the set of attributes in the network, the Bayesian network can—in principle—be used to compute any probability of interest. For problems with many variables, however, this approach is not practical. Several researchers have developed probabilistic inference algorithms that apply variations of the conditional independence concept. Pearl (1988) and Lauritzen and Spieglelhalter (1988) developed the two most well known algorithms. Pearl’s algorithm, for instance, is based on a message-passing concept. The new evidence is propagated over the network by sending messages to neighbor nodes. Through the arcs —acting as communication channels—the nodes send messages providing information about the joint probability distribution that is defined by the network and the evidence obtained so far.</p>
+    
+    
+     <h1>Training Bayesian Belief Networks</h1>
+    <p>Two questions arise in formulating BBNs: (1) how to determine the underlying
+        causal model expressed as a graph, which includes the specification of the conditional
+        independence assumptions among the attributes of the model? and (2) how to determine
+        the conditional probability distributions that quantify the dependencies among the
+        attributes in the model? In the following, we address these two questions, while noting
+        that a detailed review of the topic is beyond the scope of this chapter.
+    </p>
+    <p>As described by Ramoni and Sebastiani (1999), BBNs were originally supposed to
+        rely on domain experts to supply information about the conditional independence
+        graphical model and the subjective assessment of conditional probability distributions
+        that quantify the dependencies among attributes. However, the statistical foundation of
+        BBN soon led to the development of methods to extract both structure and conditional
+        probability estimations from data, thus turning BBNs into powerful data analysis tools.
+        Learning BBNs from data is a rapidly growing field of research that has seen a great deal
+        of activity in recent years, including work by Lam and Bachus (1994), Friedman and
+        Goldszmidt (1996), and Heckerman, Geiger and Chickering (1994).
+    </p>
+    <p>There are a number of possible scenarios to consider when addressing the problem
+        of training a BBN:
+    </p>
+    <ul>
+        <li>When the structure of the BBN is known and all the attributes for all the instances
+            are observable in the training examples, learning the conditional probabilities is
+            quite straightforward. We simply estimate the conditional probabilities by maximizing the likelihood of the training data, as in the case of the Naive Bayes Classifier
+            (estimating relative frequencies with zero-frequency corrections, for example).
+        </li>
+        <li>When the structure of the BBN is known but not all of the variables are observable
+            (partially or totally) in the training data, we come across a more complicated
+            problem. In such a case, we can resort to algorithms intended to deal with missing
+            values, such as the Estimation Maximization (EM) algorithm. For a detailed
+            explanation on the EM algorithm and its use in training BBNs, see Mitchell (1997).
+            Another approach is assimilating the problem to the case of estimating the weights
+            of the hidden nodes in a neural network. In that case, a gradient ascent approach
+            can be used, where the algorithm searches through the space of hypotheses
+            corresponding to the set of all possible entries in the conditional probability table.
+        </li>
+        <li>When the structure of the network is not known, we face a problem of model
+            selection, typically a much more complicated problem than the two previously
+            described cases. The goal is to find the network, or group of networks, that best
+            describes the probability distribution over the training data. This optimization
+            process is implemented in practice by using heuristic search techniques to find the
+            best model over the space of possible BBNs. A scoring system is commonly used
+            for choosing among alternative networks. Lam and Bachus (1994), for example,
+            have used a score based on the minimum description principle (MDL), an information theoretic perspective of Occam’s Razor principle according to which simple,
+            sparse models should be preferred to complex overfitted models.
+        </li>
+    </ul>
+    
+     <h1>Markov Chain Monte Carlo Techniques</h1>
+    
+    <p>Markov Chain Monte Carlo (MCMC) techniques have been mainly responsible for
+        the current momentum gained by Bayesian methods, since its application has enabled
+        the use of a vast range of Bayesian models that had been previously deemed as
+        intractable. With complicated models, it is rare that the posterior distribution can be
+        computed directly. The simulation techniques described in the previous section are only
+        adequate when dealing with low-dimensional problems but cannot be successfully
+        applied in many real-world problems. This is where MCMC excels. MCMC is intrinsically
+        a set of techniques for simulating from multivariate distributions. In order to introduce
+        the topic, we need to provide some definitions regarding stochastic processes and
+        Markov chains.
+    </p>
+    <h2>Markov Chains</h2>
+    <p>A random or stochastic process is a family of random variables {X(t), t∈T} defined
+        over a given probability space and indexed by a parameter t that varies over an index set T.
+        The values assumed by X(t) are called states. If T is discrete then the process is called a
+        discrete-time process and is denoted as {Xn, n=1,2,..,n}. X1 is the initial state of the process
+        and Xn is the state of the process at time n.
+    </p>
+    <p>A Markov chain is a special case of a discrete-time process in which the following rule
+        applies: At any given time n, the probabilities of the future state n+1 depend only on the
+        current state Xn. This is expressed as:
+    </p>
+    <p>
+        P(X<sub>n+1</sub> = x<sub>n+1</sub> | X<sub>1</sub>=x<sub>1</sub>,X<sub>2</sub>=x<sub>2</sub>,..,X<sub>n</sub>=x<sub>n</sub>) = P(X<sub>n+1</sub> = x<sub>n+1</sub> | X<sub>n</sub>=x<sub>n</sub>)
+    </p>
+    <p>In other words, if we generate a sequence of random variables X1, X2, .., Xn, such that
+        the next state Xn+1 is a sample from a distribution that depends only on the current state
+        of the chain, Xn, and does not depend on the rest of the chain X1, X2,..Xn-1, this sequence
+        is called a Markov chain.
+    </p>
+    <p>The conditional probability P(X<sub>n+1</sub>| X<sub>n</sub>) is known as the transition kernel of the
+        Markov chain. When the transition kernel is independent of n, then it is said to be
+        stationary, and the process is referred to as a time-homogeneous Markov chain. A finite
+        Markov chain is such that there are only a finite number k of possible states s<sub>1</sub>,s<sub>2</sub>,..,s<sub>k</sub>,
+        and the process must be in one of these k states. If any of these states can be reached
+        from any other state in a finite number of moves, the chain is said to be irreducible.
+    </p>
+    <h2>Markov Chain Simulation</h2>
+    <p>The idea of Markov Chain simulation is to simulate a random walk in the parameter
+        space that converges to a stationary distribution that is the target multivariate distribution
+        π(x) that we want to simulate (typically a joint posterior distribution). It is possible to construct
+        a Markov chain such that this stationary distribution is the target distribution π(x). Therefore,
+    </p>
+
+    
+    <p>Over time the draws Xn will look more and more like dependent samples from the target
+        distribution. After hundreds of iterations, the chain will gradually forget the starting position
+        X1, and it will gradually converge to the stationary distribution.
+    </p>
+    <p>Several methods have been developed for constructing and sampling from transition
+        distributions. Among them, the Metropolis algorithm and the Gibbs sampler are among the
+        most powerful and popular methods currently in use. For a more complete description, see
+        Gelman et al. (1995) and Neal (1993). Also, a complete set of lectures on this topic can be found
+        in Rodriguez (1999).
+    </p>
+    <h3>The Metropolis Algorithm</h3>
+    <p>The original algorithm was developed by Metropolis in 1953 with the purpose of
+        simulating the evolution of a system in a heat bath towards thermal equilibrium. In its rather
+        recent application to statistics, the Metropolis algorithm creates a sequence of points (X1,
+        X2, ...) whose distributions converge to the target distribution π(x). Let q(y| x) be the
+        jumping (proposal) distribution. In the Metropolis algorithm, this jumping distribution must
+        be symmetric, that is, q(x|y) = q(y|x) for all X,Y, and n. The algorithm proceeds as follows:
+    </p>
+    <ol>
+        <li>Given the current position Xn, the next candidate state is chosen by sampling a
+            point Y from the proposal distribution q(y|x)
+        </li>
+        <li>The ratio of the densities is calculated as r = (x<sub>n+1</sub>) / (x<sub>n</sub>) * (π(Y) / π(X<sub>n</sub>))
+        </li>
+        <li>Calculate α = min(r, 1)</li>
+        <li>With probability α accept the candidate value and set Xn+1 = Y; otherwise reject
+            Y and set Xn+1= Xn
+        </li>
+        <li>Go to step 1</li>
+    </ol>
+    <p>It can be proved that for a random walk on any proper distribution with positive
+        probability of eventually jumping from a state to any other state, the Markov chain will
+        have a unique stationary distribution. It can also be shown that the target distribution
+        is the stationary distribution of the Markov chain generated by the Metropolis algorithm
+        (see Gelman & Gelman, 1995).
+    </p>
+    <h2>Concluding Remarks</h2>
+    <p>In this chapter, we have attempted to provide an overview on Bayesian methods
+        as applied to the field of Data Mining. In doing so, we have deliberately focused on
+        reviewing the most relevant concepts, techniques, and practical issues. Over the last few
+        years, Bayesian data mining has emerged as a prominent modelling and data analysis
+        approach from which both academicians and practitioners can benefit. We envisage that
+        Bayesian Data Mining and Knowledge Discovery will continue to expand in the future,
+        both from a theoretical and a practical applications perspective.
+    </p>
+    
+    
+    <h2>Endnotes</h2>
+    <ol>
+        <li>The complete dataset can be found at Delve, a machine learning repository and
+            testing environment located at the University of Toronto, Department of Computer
+            Science. The URL is <a href="http://www.cs.toronto.edu/~delve">http://www.cs.toronto.edu/~delve</a>.
+        </li>
+        <li>The algorithm was coded using S-Plus. The programs are available from the
+            authors.
+        </li>
+        <li>Recent research has established that the model is not limited to acyclic graphs.
+            Direct or indirect cyclic causality may be included in BBNs.
+        </li>
+        <li>Once again, the example has been created for illustrative purposes and should not
+            be taken too seriously.
+        </li>
+        <li>The philosophical debate regarding this approach has been going on for centuries.
+            William of Occam (14th century) was one of the first thinkers to discuss the
+            question of whether simpler hypotheses are better than complicated ones. For this
+            reason, this approach goes by the name of Occam’s razor.
+        </li>
+    </ol>
+    
+    
+    <h2>References</h2>
+    <ol>
+        <li>Cox, R. T. (1946). Probability, frequency and reasonable expectation. American Journal
+            of Physics, 14:1-13.
+        </li>
+        <li>DeGroot, M. (1986). Probability and statistics. Reading, MA: Addison Wesley.
+        </li>
+        <li>Dougherty, J., Kohavi, R., & Sahami, M. (1995). Supervised and unsupervised discretization
+            of continuous features, In A. Prieditis and S. Russell (eds.), Proceedings of the
+            Twelfth International Conference on Machine Learning, pp. 194—202. San
+            Francisco, CA: Morgan Kaufmann.
+        </li>
+        <li>Friedman, N. & Goldzmidt, M. (1999). Learning Bayesian networks with local structure.
+            In M.I. Jordan (ed.), Learning in graphical models. Cambridge, MA: MIT Press.
+        </li>
+        <li>Friedman, N., Geiger, D.,& Goldszmidt, M. (1997). Bayesian network classifiers. Machine
+            Learning, 29:131-163.
+        </li>
+        <li>Gelman, A., Carlin, J., Stern, H., & Rubin, D. (1995). Bayesian Data Analysis, Chapman
+            & Hall/CRC.
+        </li>
+        <li>Heckerman, D., Geiger, D., & Chickering, D. (1994). Learning Bayesian networks: The
+            combination of knowledge and statistical data. Technical Report MSR-TR-94-09,
+            Microsoft Research.
+        </li>
+        <li>Janes, E.T. (1996). Probability theory: The logic of science, Fragmentary Edition.
+            Available online at: <a href="http://bayes.wustl.edu/etj/prob.html">http://bayes.wustl.edu/etj/prob.html</a>.
+        </li>
+        <li>Joachims, T. (1996). A probabilistic analysis of the Rocchio algorithm with TFIDF for text
+            categorization. Technical Report CMU-CS-96-118, School of Computer Science,
+            Carnegie Mellon University, March.
+        </li>
+        <li>Kohavi, R., Becker, B., & Sommerfield, D. (1997). Improving simple Bayes. ECML-97:
+            Proceedings of the Ninth European Conference on Machine Learning.
+        </li>
+        <li>Lam, W. & Bachus, F. (1994). Learning Bayesian networks: An approach based on the
+            MDL principle Computational Intelligence 10(3), 269-293.
+        </li>
+        <li>Lauritzen, S. L. & Spiegelhalter. D. J. (1988). Local computations with probabilities on
+            graphical structures and their application to expert systems. Journal of the Royal
+            Statistical Society, Series B, 50(2):157-224.
+        </li>
+    </ol>
+<ol>
+        <li>Mitchell. T. (1997). Machine learning. New York: McGraw-Hill.</li>
+        <li>Neal, R. M. (1993). Probabilistic inference using Markov Chain Monte Carlo Methods.
+            Technical Report CRG-TR-93-1, Department of Computer Science, University of
+            Toronto.
+        </li>
+        <li>Pearl, J. (1988). Probabilistic reasoning in intelligent systems: Networks of plausible
+            inference. San Mateo, CA: Morgan Kaufmann.
+        </li>
+        <li>Ramoni, M. & Sebastiani, P. (1999). Bayesian methods for intelligent data analysis. In M.
+            Berthold & D.J. Hand, (eds.), Intelligent data analysis: An introduction. New
+            York: Springer-Verlag.
+        </li>
+        <li>Rodriguez, C. (1999). An introduction to Markov Chain Monte Carlo. Available online
+            at: <a href="http://omega.albany.edu:8008/cdocs/">http://omega.albany.edu:8008/cdocs/</a>.
+        </li>
+        <li>Sivia, D. (1996). Data analysis: A Bayesian tutorial. Oxford, UK: Oxford Science
+            Publications.
+        </li>
+        <li>Van der Gaag, L.C. (1996). Bayesian belief networks: Odds and ends. Technical Report
+            UU-Cs-1996-14, Utretch University.
+        </li>
+        <li>Witten, I. & Frank, E. (2000). Data mining: Practical machine learning tools and
+            techniques with Java implementations. San Mateo, CA: Morgan Kaufmann.
+        </li>
+    </ol>
+    
+    
+    
+    
+    
+    
+    
+    
+</body>
+    
+    
+</html>
